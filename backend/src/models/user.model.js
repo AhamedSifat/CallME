@@ -3,14 +3,13 @@ import mongoose from 'mongoose';
 const userSchema = new mongoose.Schema(
   {
     phoneNumber: {
-      type: String,
-      required: true,
+      required: false,
       sparse: true,
       unique: true,
+      type: String,
     },
     phoneSuffix: {
       type: String,
-      required: true,
     },
 
     username: {
@@ -57,11 +56,6 @@ const userSchema = new mongoose.Schema(
     agreed: {
       type: Boolean,
       default: false,
-    },
-
-    password: {
-      type: String,
-      required: true,
     },
   },
   { timestamps: true }
