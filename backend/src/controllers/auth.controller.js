@@ -1,6 +1,6 @@
 import generateOtp from '../utils/otpGenerator.js';
 import User from '../models/user.model.js';
-import response from '../utils/response.js';
+import { response } from '../utils/response.js';
 
 const sendOtp = async (req, res) => {
   const { phoneNumber, phoneSuffix, email } = req.body;
