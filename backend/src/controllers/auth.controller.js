@@ -6,6 +6,7 @@ import {
   sendOtpToPhoneNumber,
   verifyOtpCode,
 } from '../services/twilio.service.js';
+import generateToken from '../utils/generateToken.js';
 
 const sendOtp = async (req, res) => {
   const { phoneNumber, phoneSuffix, email } = req.body;
@@ -89,5 +90,18 @@ const verifyOtp = async (req, res) => {
       user.isVerified = true;
       await user.save();
     }
-  } catch (error) {}
+    const token = generateToken({ id: user._id });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return response(res, 200, 'OTP verified successfully', { token, user });
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    return response(res, 500, 'Internal server error');
+  }
 };
+
+export { sendOtp, verifyOtp };
