@@ -7,6 +7,7 @@ import {
   verifyOtpCode,
 } from '../services/twilio.service.js';
 import generateToken from '../utils/generateToken.js';
+import { uploadFileToCloudinary } from '../config/cloudinaryConfig.js';
 
 const sendOtp = async (req, res) => {
   const { phoneNumber, phoneSuffix, email } = req.body;
@@ -104,4 +105,36 @@ const verifyOtp = async (req, res) => {
   }
 };
 
-export { sendOtp, verifyOtp };
+const updateProfile = async (req, res) => {
+  const userId = req.user.userId;
+  const { username, about, agreed } = req.body;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return response(res, 404, 'User not found');
+    }
+
+    const profilePicture = req.file ? req.file.path : null;
+
+    if (profilePicture) {
+      const uploadResult = await uploadFileToCloudinary(req.file);
+      user.profilePicture = uploadResult.secure_url;
+    }
+
+    if (req.body.profilePicture) {
+      user.profilePicture = req.body.profilePicture;
+    }
+
+    if (username) user.username = username;
+    if (about) user.about = about;
+    if (agreed) user.agreed = agreed;
+
+    await user.save();
+    return response(res, 200, 'Profile updated successfully', { user });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    return response(res, 500, 'Internal server error');
+  }
+};
+
+export { sendOtp, verifyOtp, updateProfile };
