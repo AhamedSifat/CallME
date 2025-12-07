@@ -1,6 +1,6 @@
 import generateOtp from '../utils/otpGenerator.js';
 import User from '../models/user.model.js';
-import { response } from '../utils/response.js';
+import { response } from '../utils/responseHandler.js';
 import { sendOtpEmail } from '../services/email.service.js';
 import {
   sendOtpToPhoneNumber,
