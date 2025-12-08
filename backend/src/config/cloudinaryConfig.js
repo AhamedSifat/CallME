@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { config } from 'dotenv';
-import multer from 'multer';
+
 import fs from 'fs';
 config();
 
@@ -29,6 +29,4 @@ const uploadFileToCloudinary = (file) => {
   });
 };
 
-const multerMiddleware = multer({ dest: 'uploads/' }).single('media');
-
-export { uploadFileToCloudinary, multerMiddleware };
+export { uploadFileToCloudinary };

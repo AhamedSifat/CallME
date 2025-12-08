@@ -1,6 +1,20 @@
 import express from 'express';
-import { sendOtp, verifyOtp } from '../controllers/auth.controller.js';
+import {
+  sendOtp,
+  verifyOtp,
+  updateProfile,
+} from '../controllers/auth.controller.js';
+import { authenticateToken } from '../middlewares/auth.middleware.js';
+import { multerMiddleware } from '../middlewares/multer.middleware.js';
+
 const router = express.Router();
 router.post('/send-otp', sendOtp);
 router.post('/verify-otp', verifyOtp);
+
+router.post(
+  '/update-profile',
+  authenticateToken,
+  multerMiddleware,
+  updateProfile
+);
 export default router;

@@ -106,7 +106,7 @@ const verifyOtp = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
-  const userId = req.user.userId;
+  const userId = req.user.id;
   const { username, about, agreed } = req.body;
   try {
     const user = await User.findById(userId);
