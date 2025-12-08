@@ -8,6 +8,7 @@ import {
 } from '../services/twilio.service.js';
 import generateToken from '../utils/generateToken.js';
 import { uploadFileToCloudinary } from '../config/cloudinaryConfig.js';
+import Conversation from '../models/conversation.model.js';
 
 const sendOtp = async (req, res) => {
   const { phoneNumber, phoneSuffix, email } = req.body;
@@ -137,4 +138,68 @@ const updateProfile = async (req, res) => {
   }
 };
 
-export { sendOtp, verifyOtp, updateProfile };
+const checkAuthenticated = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (user) {
+      return response(res, 200, 'User is authenticated', { user });
+    }
+    if (!user) {
+      return response(res, 401, 'User is not authenticated');
+    }
+  } catch (error) {
+    console.error('Error checking authentication:', error);
+    return response(res, 500, 'Internal server error');
+  }
+};
+
+const getAllUsers = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const users = await User.find({ _id: { $ne: userId } })
+      .select('username about profilePicture phoneNumber lastseen isOnline')
+      .lean();
+
+    const usersWithConversations = await Promise.all(
+      users.map(async (user) => {
+        const conversation = await Conversation.findOne({
+          participants: { $all: [userId, user._id] },
+        })
+          .populate({
+            path: 'lastMessage',
+            select: 'content sender receiver createdAt',
+          })
+          .lean();
+        return {
+          ...user,
+          conversation: conversation || null,
+        };
+      })
+    );
+
+    return response(
+      res,
+      200,
+      'Users retrieved successfully',
+      usersWithConversations
+    );
+  } catch (error) {
+    console.error('Error retrieving users:', error);
+    return response(res, 500, 'Internal server error');
+  }
+};
+
+const logout = (req, res) => {
+  res.clearCookie('token');
+  return response(res, 200, 'Logged out successfully');
+};
+
+export {
+  sendOtp,
+  verifyOtp,
+  updateProfile,
+  logout,
+  checkAuthenticated,
+  getAllUsers,
+};
