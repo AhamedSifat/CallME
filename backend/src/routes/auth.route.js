@@ -7,8 +7,8 @@ import {
   checkAuthenticated,
   getAllUsers,
 } from '../controllers/auth.controller.js';
-import { authenticateToken } from '../middlewares/auth.middleware.js';
-import { multerMiddleware } from '../middlewares/multer.middleware.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
+import { multerMiddleware } from '../middleware/multer.middleware.js';
 
 const router = express.Router();
 router.post('/send-otp', sendOtp);
