@@ -98,4 +98,39 @@ const getConversationMessages = async (req, res) => {
   }
 };
 
+const getMessagesByConversationId = async (req, res) => {
+  const { conversationId } = req.params;
+  const userId = req.user.id;
+  try {
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return response(res, 404, 'Conversation not found');
+    }
+
+    if (!conversation.participants.includes(userId)) {
+      return response(res, 403, 'Access denied to this conversation');
+    }
+    const messages = await Message.find({ conversation: conversationId })
+      .populate('sender', 'username profilePicture')
+      .populate('receiver', 'username profilePicture')
+      .sort({ createdAt: 1 });
+
+    await Message.updateMany(
+      {
+        conversation: conversationId,
+        receiver: userId,
+        messageStatus: { $in: ['send', 'delivered'] },
+      },
+      { $set: { messageStatus: 'read' } }
+    );
+
+    conversation.unreadCounts = 0;
+    await conversation.save();
+    return response(res, 200, 'Messages retrieved successfully', messages);
+  } catch (error) {
+    console.error(error);
+    return response(res, 500, 'Server error', error.message);
+  }
+};
+
 export default sendMessage;

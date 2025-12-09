@@ -44,7 +44,7 @@ const messageSchema = new mongoose.Schema(
       },
     ],
 
-    messageSatatus: {
+    messageStatus: {
       type: String,
       default: 'send',
     },
