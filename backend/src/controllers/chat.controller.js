@@ -69,4 +69,33 @@ const sendMessage = async (req, res) => {
   }
 };
 
+const getConversationMessages = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    let conversation = await Conversation.find({
+      participants: userId,
+    })
+      .populate({
+        participants: 'username profilePicture',
+      })
+      .populate({
+        path: 'lastMessage',
+        populate: {
+          path: 'sender receiver',
+          select: 'username profilePicture',
+        },
+      })
+      .sort({ updatedAt: -1 });
+
+    if (!conversation) {
+      return response(res, 200, 'No conversation found', []);
+    }
+
+    return response(res, 200, 'Conversations got successfully', conversation);
+  } catch (error) {
+    console.error(error);
+    return response(res, 500, 'Server error', error.message);
+  }
+};
+
 export default sendMessage;
