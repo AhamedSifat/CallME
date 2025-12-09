@@ -164,4 +164,33 @@ const markMessagesAsRead = async (req, res) => {
   }
 };
 
-export default sendMessage;
+const deleteMessage = async (req, res) => {
+  const { messageId } = req.params;
+  const userId = req.user.id;
+  try {
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return response(res, 404, 'Message not found');
+    }
+    if (message.sender.toString() !== userId) {
+      return response(
+        res,
+        403,
+        'You are not authorized to delete this message'
+      );
+    }
+    await Message.findByIdAndDelete(messageId);
+    return response(res, 200, 'Message deleted successfully');
+  } catch (error) {
+    console.error(error);
+    return response(res, 500, 'Server error', error.message);
+  }
+};
+
+export {
+  sendMessage,
+  getConversationMessages,
+  getMessagesByConversationId,
+  markMessagesAsRead,
+  deleteMessage,
+};
