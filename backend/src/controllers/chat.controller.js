@@ -69,7 +69,7 @@ const sendMessage = async (req, res) => {
   }
 };
 
-const getConversationMessages = async (req, res) => {
+const getConversation = async (req, res) => {
   const userId = req.user.id;
   try {
     let conversation = await Conversation.find({
@@ -189,7 +189,7 @@ const deleteMessage = async (req, res) => {
 
 export {
   sendMessage,
-  getConversationMessages,
+  getConversation,
   getMessagesByConversationId,
   markMessagesAsRead,
   deleteMessage,
