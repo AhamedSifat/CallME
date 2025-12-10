@@ -94,3 +94,23 @@ const viewStatus = async (req, res) => {
     return response(res, 500, 'Internal server error');
   }
 };
+
+export const deleteStatus = async (req, res) => {
+  const { statusId } = req.params;
+  const userId = req.user.id;
+  try {
+    const status = await Status.findById(statusId);
+    if (!status) {
+      return response(res, 404, 'Status not found');
+    }
+    if (status.user.toString() !== userId) {
+      return response(res, 403, 'You are not authorized to delete this status');
+    }
+    await Status.findByIdAndDelete(statusId);
+    return response(res, 200, 'Status deleted successfully');
+  } catch (error) {
+    console.error('Error deleting status:', error);
+    return response(res, 500, 'Internal server error');
+  }
+};
+export { createStatus, getStatuses, viewStatus, deleteStatus };
