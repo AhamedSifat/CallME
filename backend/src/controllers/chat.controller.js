@@ -76,7 +76,8 @@ const getConversation = async (req, res) => {
       participants: userId,
     })
       .populate({
-        participants: 'username profilePicture',
+        path: 'participants',
+        select: 'username profilePicture',
       })
       .populate({
         path: 'lastMessage',
