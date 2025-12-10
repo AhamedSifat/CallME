@@ -138,27 +138,17 @@ const markMessagesAsRead = async (req, res) => {
   const { messageId } = req.body;
   const userId = req.user.id;
   try {
-    const message = await Message.find({
+    const messages = await Message.find({
       _id: { $in: messageId },
       receiver: userId,
     });
-    if (!message) {
-      return response(res, 404, 'Message not found');
-    }
-    if (message.receiver.toString() !== userId) {
-      return response(
-        res,
-        403,
-        'You are not authorized to update this message'
-      );
-    }
 
     await Message.updateMany(
       { _id: { $in: messageId }, receiver: userId },
 
       { $set: { messageStatus: 'read' } }
     );
-    return response(res, 200, 'Message marked as read successfully', message);
+    return response(res, 200, 'Message marked as read successfully', messages);
   } catch (error) {
     console.error(error);
     return response(res, 500, 'Server error', error.message);
