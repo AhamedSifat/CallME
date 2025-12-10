@@ -69,3 +69,28 @@ export const getStatuses = async (req, res) => {
     return response(res, 500, 'Internal server error');
   }
 };
+
+const viewStatus = async (req, res) => {
+  const { statusId } = req.params;
+  const userId = req.user.id;
+  try {
+    const status = await Status.findById(statusId);
+    if (!status) {
+      return response(res, 404, 'Status not found');
+    }
+    if (!status.viewers.includes(userId)) {
+      status.viewers.push(userId);
+      await status.save();
+
+      const updatedStatus = await Status.findById(statusId)
+        .populate('user', 'username profilePicture')
+        .populate('viewers', 'username profilePicture');
+    } else {
+      console.log('User has already viewed this status');
+    }
+    return response(res, 200, 'Status viewed successfully');
+  } catch (error) {
+    console.error('Error viewing status:', error);
+    return response(res, 500, 'Internal server error');
+  }
+};
