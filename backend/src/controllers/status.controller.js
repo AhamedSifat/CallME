@@ -51,3 +51,21 @@ export const createStatus = async (req, res) => {
     return response(res, 500, 'Internal server error');
   }
 };
+
+export const getStatuses = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const statuses = await Status.find({
+      expiresAt: { $gt: new Date() },
+      user: { $ne: userId },
+    })
+      .populate('user', 'username profilePicture')
+      .populate('viewers', 'username profilePicture')
+      .sort({ createdAt: -1 });
+    return response(res, 200, 'Statuses retrieved successfully', statuses);
+  } catch (error) {
+    console.error('Error retrieving statuses:', error);
+    return response(res, 500, 'Internal server error');
+  }
+};
