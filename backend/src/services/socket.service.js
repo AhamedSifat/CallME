@@ -49,6 +49,20 @@ const initializeSocket = (server) => {
        }
       });
 
+      //return online status of requested User
+
+      socket.on('get_user_status', (requestedUserId, callback) => {
+        const isOnline = onlineUsers.has(requestedUserId);
+        callback({
+          userId: requestedUserId,
+          isOnline,
+          lastSeen: isOnline ? new Date() : null
+        })
+        
+      })
+
+
+   
 
 
       
