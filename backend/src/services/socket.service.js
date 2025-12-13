@@ -133,11 +133,26 @@ const initializeSocket = (server) => {
         
         
       })
-
-
-     
       
-     
+      //handle typing stop event
+      socket.on("typing_stop", (conversationId, receiverId) => {
+        if(!userId || !receiverId || !conversationId) return;
+
+        const userTyping = typingUsers.get(userId);
+        if(userTyping && userTyping[conversationId]) {
+          userTyping[conversationId] = false;
+          if(userTyping[`${conversationId}_timeout`]) {
+            clearTimeout(userTyping[`${conversationId}_timeout`]);
+            delete userTyping[`${conversationId}_timeout`];
+          }
+        }
+        
+        io.to(receiverId).emit("user_typing", {
+          userId,
+          isTyping: false,
+          conversationId
+        });
+      })
     });
 
 
