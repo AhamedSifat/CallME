@@ -76,8 +76,26 @@ const initializeSocket = (server) => {
       })
 
     
+        //update message as read and notify sender
+      socket.on("message_read", async (messageIds, senderId) => {
+        try {
+         await Message.updateMany({_id: {$in: messageIds}}, {$set: {messageStatus: "read"}})
 
+         const senderSocketId = onlineUsers.get(senderId);
+         if (senderSocketId) {
+          messageIds.forEach((messageId) => {
+            io.to(senderSocketId).emit("message_status_update", {
+              messageId,
+              messageStatus: "read"
+            });
+          })
+         }
+        } catch (error) {
+         console.log(`error updating message status: ${error}`);
+        }
+      })
 
+     
       
      
     });
