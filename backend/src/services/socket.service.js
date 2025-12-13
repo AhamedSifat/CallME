@@ -62,7 +62,20 @@ const initializeSocket = (server) => {
       })
 
 
-   
+      //forward message to receiver if online 
+      socket.on("send_message", async (message) => {
+        try {
+          const receiverSocketId = onlineUsers.get(message.receiver?.id);
+          if (receiverSocketId) {
+            io.to(receiverSocketId).emit("receive_message", message);
+          }
+        } catch (error) {
+          console.log(`error forwarding message: ${error}`);
+          socket.emit("message_error", {error: "Failed to forward message"});
+        }
+      })
+
+    
 
 
       
