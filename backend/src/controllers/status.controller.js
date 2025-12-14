@@ -81,14 +81,13 @@ const viewStatus = async (req, res) => {
     if (!status.viewers.includes(userId)) {
       status.viewers.push(userId);
       await status.save();
-
-      const updatedStatus = await Status.findById(statusId)
-        .populate('user', 'username profilePicture')
-        .populate('viewers', 'username profilePicture');
     } else {
       console.log('User has already viewed this status');
     }
-    return response(res, 200, 'Status viewed successfully');
+    const updatedStatus = await Status.findById(statusId)
+        .populate('user', 'username profilePicture')
+        .populate('viewers', 'username profilePicture');
+    return response(res, 200, 'Status viewed successfully', updatedStatus);
   } catch (error) {
     console.error('Error viewing status:', error);
     return response(res, 500, 'Internal server error');
