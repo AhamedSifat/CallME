@@ -183,7 +183,7 @@ const initializeSocket = (server) => {
                .populate('sender', 'username profilePicture')
                .populate('receiver', 'username profilePicture').populate('reactions.user', 'username')
 
-               const reactionUpdate = {
+               const reactionUpdated = {
                 messageId,
                 reaction: populatedMessage.reactions
                }
@@ -192,11 +192,11 @@ const initializeSocket = (server) => {
          const senderSocketId = onlineUsers.get(message.sender?.id.toString());
 
          if(receiverSocketId) {
-          io.to(receiverSocketId).emit("reaction_update", reactionUpdate);
+          io.to(receiverSocketId).emit("reaction_update", reactionUpdated);
          }
 
          if(senderSocketId) {
-          io.to(senderSocketId).emit("reaction_update", reactionUpdate);
+          io.to(senderSocketId).emit("reaction_update", reactionUpdated);
          }
         
         
@@ -205,6 +205,37 @@ const initializeSocket = (server) => {
           console.log(`error adding or updating reaction: ${error}`);
         }
       })
+
+      //handle disconnection and mark user offline
+      socket.on("disconnect", async () => {
+        try {
+          if(userId) {
+            onlineUsers.delete(userId);
+            if(typingUsers.has(userId)) {
+              const userTyping = typingUsers.get(userId);
+              Object.keys(userTyping).forEach((key) => {
+                if(key.endsWith("_timeout")) {
+                  clearTimeout(userTyping[key]);
+                }
+              })
+              typingUsers.delete(userId);
+            }
+           await User.findByIdAndUpdate(userId, {lastSeen: new Date(), isOnline: false});
+          }
+          io.emit("user_status", {userId, isOnline: false, lastSeen: new Date()});
+
+          socket.leave(userId);
+          console.log(`user ${userId} disconnected`);
+        } catch (error) {
+          console.log(`error handling disconnection: ${error}`);
+        }
+      })
+
+
+      
+      
+
+
     });
 
 
