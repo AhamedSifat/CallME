@@ -231,12 +231,23 @@ const initializeSocket = (server) => {
         }
       })
 
-
+      
       
       
 
 
     });
 
+    //attach the online user map to the socket server for external users
+
+    io.socketUserMap = onlineUsers;
+    return io;
+
+
+
+
 
 }
+
+
+export {initializeSocket}
