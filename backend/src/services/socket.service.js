@@ -153,6 +153,58 @@ const initializeSocket = (server) => {
           conversationId
         });
       })
+
+      //add or update reaction on message
+      socket.on("add_reaction", async (messageId, emoji, reactionUserId) => {
+        try {
+         const message = await Message.findById(messageId);
+         if(!message) return;
+
+
+         const existingIndex = message.reactions.findIndex((reaction) => reaction.user.toString() === reactionUserId);
+
+         if(existingIndex > -1){
+          const existingReaction= message.reactions[existingIndex];
+
+          if(existingReaction.emoji === emoji){
+            //remove same reaction
+            message.reactions.splice(existingIndex, 1);
+          } else {
+            //change emoji
+            message.reactions[existingIndex].emoji = emoji;
+          }
+         } else {
+          //add new reaction
+          message.reactions.push({user: reactionUserId, emoji});
+         }
+
+         await message.save();
+         const populatedMessage = await Message.findById(message._id)
+               .populate('sender', 'username profilePicture')
+               .populate('receiver', 'username profilePicture').populate('reactions.user', 'username')
+
+               const reactionUpdate = {
+                messageId,
+                reaction: populatedMessage.reactions
+               }
+
+         const receiverSocketId = onlineUsers.get(message.receiver?.id.toString());
+         const senderSocketId = onlineUsers.get(message.sender?.id.toString());
+
+         if(receiverSocketId) {
+          io.to(receiverSocketId).emit("reaction_update", reactionUpdate);
+         }
+
+         if(senderSocketId) {
+          io.to(senderSocketId).emit("reaction_update", reactionUpdate);
+         }
+        
+        
+         
+        } catch (error) {
+          console.log(`error adding or updating reaction: ${error}`);
+        }
+      })
     });
 
 
