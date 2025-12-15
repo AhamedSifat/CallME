@@ -163,9 +163,7 @@ const markMessagesAsRead = async (req, res) => {
     //emit socket event
     if (req.io && req.socketUserMap) {
       for (const message of messages) {
-        const senderSocketId = req.socketUserMap.get(
-          message.sender._id.toString()
-        );
+        const senderSocketId = req.socketUserMap.get(message.sender.toString());
         if (senderSocketId) {
           const updatedMessage = {
             _id: message._id,
