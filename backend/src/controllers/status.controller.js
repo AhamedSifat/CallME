@@ -134,6 +134,15 @@ export const deleteStatus = async (req, res) => {
       return response(res, 403, 'You are not authorized to delete this status');
     }
     await Status.findByIdAndDelete(statusId);
+
+    //emit socket event
+    if (req.io && req.socketUserMap) {
+      for (const [connectedUserId, socketId] of req.socketUserMap) {
+        if (connectedUserId != userId) {
+          req.io.to(socketId).emit('status_deleted', statusId);
+        }
+      }
+    }
     return response(res, 200, 'Status deleted successfully');
   } catch (error) {
     console.error('Error deleting status:', error);
