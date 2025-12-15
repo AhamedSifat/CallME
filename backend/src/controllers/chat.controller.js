@@ -146,19 +146,36 @@ const getMessagesByConversationId = async (req, res) => {
 };
 
 const markMessagesAsRead = async (req, res) => {
-  const { messageId } = req.body;
+  const { messageIds } = req.body;
   const userId = req.user.id;
   try {
     const messages = await Message.find({
-      _id: { $in: messageId },
+      _id: { $in: messageIds },
       receiver: userId,
     });
 
     await Message.updateMany(
-      { _id: { $in: messageId }, receiver: userId },
+      { _id: { $in: messageIds }, receiver: userId },
 
       { $set: { messageStatus: 'read' } }
     );
+
+    //emit socket event
+    if (req.io && req.socketUserMap) {
+      for (const message of messages) {
+        const senderSocketId = req.socketUserMap.get(
+          message.sender._id.toString()
+        );
+        if (senderSocketId) {
+          const updatedMessage = {
+            _id: message._id,
+            messageStatus: 'read',
+          };
+          req.io.to(senderSocketId).emit('message_read', updatedMessage);
+          await message.save();
+        }
+      }
+    }
     return response(res, 200, 'Message marked as read successfully', messages);
   } catch (error) {
     console.error(error);
