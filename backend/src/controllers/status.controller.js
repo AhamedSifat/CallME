@@ -45,6 +45,15 @@ export const createStatus = async (req, res) => {
       .populate('user', 'username profilePicture')
       .populate('viewers', 'username profilePicture');
 
+    //emit socket event
+    if (req.io && req.socketUserMap) {
+      for (const [connectedUserId, socketId] of req.socketUserMap) {
+        if (connectedUserId != userId) {
+          req.io.to(socketId).emit('new-status', populatedStatus);
+        }
+      }
+    }
+
     return response(res, 201, 'Status created successfully', populatedStatus);
   } catch (error) {
     console.error('Error creating status:', error);
@@ -85,8 +94,8 @@ const viewStatus = async (req, res) => {
       console.log('User has already viewed this status');
     }
     const updatedStatus = await Status.findById(statusId)
-        .populate('user', 'username profilePicture')
-        .populate('viewers', 'username profilePicture');
+      .populate('user', 'username profilePicture')
+      .populate('viewers', 'username profilePicture');
     return response(res, 200, 'Status viewed successfully', updatedStatus);
   } catch (error) {
     console.error('Error viewing status:', error);
