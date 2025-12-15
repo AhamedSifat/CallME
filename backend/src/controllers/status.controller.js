@@ -90,13 +90,32 @@ const viewStatus = async (req, res) => {
     if (!status.viewers.includes(userId)) {
       status.viewers.push(userId);
       await status.save();
+      const updatedStatus = await Status.findById(statusId)
+        .populate('user', 'username profilePicture')
+        .populate('viewers', 'username profilePicture');
+
+      //emit socket event
+      if (req.io && req.socketUserMap) {
+        const statusOwnerSocketId = req.socketUserMap.get(
+          status.user._id.toString()
+        );
+        if (statusOwnerSocketId) {
+          const viewData = {
+            statusId,
+            viewerId: userId,
+            totalViewers: status.viewers.length,
+            viewers: status.viewers,
+          };
+          res.io.to(statusOwnerSocketId).emit('status_viewed', viewData);
+        }
+      } else {
+        console.log('status owner socket not found');
+      }
     } else {
       console.log('User has already viewed this status');
     }
-    const updatedStatus = await Status.findById(statusId)
-      .populate('user', 'username profilePicture')
-      .populate('viewers', 'username profilePicture');
-    return response(res, 200, 'Status viewed successfully', updatedStatus);
+
+    return response(res, 200, 'Status viewed successfully');
   } catch (error) {
     console.error('Error viewing status:', error);
     return response(res, 500, 'Internal server error');
