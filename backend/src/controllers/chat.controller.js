@@ -199,6 +199,17 @@ const deleteMessage = async (req, res) => {
       );
     }
     await Message.findByIdAndDelete(messageId);
+
+    //emit socket event
+    if (req.io && req.socketUserMap) {
+      const receiverSocketId = req.socketUserMap.get(
+        message.receiver.toString()
+      );
+      if (receiverSocketId) {
+        req.io.to(receiverSocketId).emit('message_deleted', messageId);
+      }
+    }
+
     return response(res, 200, 'Message deleted successfully');
   } catch (error) {
     console.error(error);
