@@ -62,6 +62,17 @@ const sendMessage = async (req, res) => {
       .populate('sender', 'username profilePicture')
       .populate('receiver', 'username profilePicture');
 
+    //emit socket event
+    if (req.io && req.socketUserMap) {
+      const receiverSocketId = req.socketUserMap.get(receiverId);
+      if (receiverSocketId) {
+        req.io.to(receiverSocketId).emit('new-message', populatedMessage);
+
+        message.messageStatus = 'delivered';
+        await message.save();
+      }
+    }
+
     return response(res, 200, 'Message sent successfully', populatedMessage);
   } catch (error) {
     console.error(error);
