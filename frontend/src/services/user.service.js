@@ -41,3 +41,25 @@ export const updateProfile = async (data) => {
     throw error;
   }
 };
+
+export const checkAuthenticated = async () => {
+  try {
+    const response = await ApiInstance.get('/auth/check-auth');
+    if (response.data.status === 'success') {
+      return {
+        isAuthenticated: true,
+        user: response.data.user,
+      };
+    } else if (response.data.status === 'error') {
+      return {
+        isAuthenticated: false,
+      };
+    }
+  } catch (error) {
+    console.error(
+      'checkAuthenticated error:',
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
