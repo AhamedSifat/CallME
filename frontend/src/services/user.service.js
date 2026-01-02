@@ -63,3 +63,13 @@ export const checkAuthenticated = async () => {
     throw error;
   }
 };
+
+export const logout = async () => {
+  try {
+    const response = await ApiInstance.post('/auth/logout');
+    return response.data;
+  } catch (error) {
+    console.error('logout error:', error.response?.data || error.message);
+    throw error;
+  }
+};
