@@ -1,5 +1,14 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router';
+import Login from './pages/user-login/Login';
+
 const App = () => {
-  return <div className='bg-red-500'>App</div>;
+  return (
+    <Router>
+      <Routes>
+        <Route path='/user-login' element={<Login />} />
+      </Routes>
+    </Router>
+  );
 };
 
 export default App;
