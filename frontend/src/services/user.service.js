@@ -28,3 +28,16 @@ export const verifyOtp = async (phoneNumber, phoneSuffix, otp, email) => {
     throw error;
   }
 };
+
+export const updateProfile = async (data) => {
+  try {
+    const response = await ApiInstance.put('/auth/update-profile', data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      'updateProfile error:',
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
