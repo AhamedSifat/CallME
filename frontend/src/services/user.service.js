@@ -13,3 +13,18 @@ export const sendOtp = async (phoneNumber, phoneSuffix, email) => {
     throw error;
   }
 };
+
+export const verifyOtp = async (phoneNumber, phoneSuffix, otp, email) => {
+  try {
+    const response = await ApiInstance.post('/auth/verify-otp', {
+      phoneNumber,
+      phoneSuffix,
+      otp,
+      email,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('verifyOtp error:', error.response?.data || error.message);
+    throw error;
+  }
+};
